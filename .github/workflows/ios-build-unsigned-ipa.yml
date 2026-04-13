@@ -3,15 +3,28 @@ name: Build unsigned iOS IPA (RoomPlanScanner)
 on:
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   build:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
 
+      - name: Show environment
+        run: |
+          set -euo pipefail
+          sw_vers
+          ls -1 /Applications | grep -i xcode || true
+          xcodebuild -version
+          xcodebuild -showsdks || true
+
       - name: Build .app (unsigned)
         run: |
           set -euo pipefail
+          set -o pipefail
+          mkdir -p build
           xcodebuild \
             -project ios/RoomPlanScanner/RoomPlanScanner.xcodeproj \
             -scheme RoomPlanScanner \
@@ -21,7 +34,8 @@ jobs:
             -derivedDataPath build/DerivedData \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
-            build
+            DEVELOPMENT_TEAM= \
+            build | tee build/xcodebuild.log
 
       - name: Package .ipa
         run: |
@@ -36,3 +50,9 @@ jobs:
           name: RoomPlanScanner-unsigned-ipa
           path: RoomPlanScanner-unsigned.ipa
 
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-log
+          path: build/xcodebuild.log
