@@ -64,14 +64,16 @@ final class RoomCaptureModel: NSObject, ObservableObject {
 }
 
 extension RoomCaptureModel: RoomCaptureSessionDelegate {
-    func captureSession(_ session: RoomCaptureSession, didUpdate room: CapturedRoom) {
-        capturedRoom = room
+    nonisolated func captureSession(_ session: RoomCaptureSession, didUpdate room: CapturedRoom) {
+        Task { @MainActor in
+            self.capturedRoom = room
+        }
     }
 
-    func captureSession(_ session: RoomCaptureSession, didEndWith data: CapturedRoomData, error: Error?) {
-        if let error {
-            lastErrorMessage = "扫描结束（有错误）：\(error.localizedDescription)"
+    nonisolated func captureSession(_ session: RoomCaptureSession, didEndWith data: CapturedRoomData, error: Error?) {
+        guard let error else { return }
+        Task { @MainActor in
+            self.lastErrorMessage = "扫描结束（有错误）：\(error.localizedDescription)"
         }
     }
 }
-

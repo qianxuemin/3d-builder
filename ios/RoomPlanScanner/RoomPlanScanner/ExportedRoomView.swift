@@ -2,7 +2,7 @@ import SwiftUI
 
 struct ExportedRoomView: View {
     let export: RoomExport
-    @State private var sharingURL: URL?
+    @State private var sharingItem: ShareItem?
 
     var body: some View {
         List {
@@ -21,18 +21,18 @@ struct ExportedRoomView: View {
                         .lineLimit(1)
                 }
 
-                Button("分享 room.usdz") { sharingURL = export.usdzURL }
-                Button("分享 room.json") { sharingURL = export.jsonURL }
+                Button("分享 room.usdz") { sharingItem = ShareItem(url: export.usdzURL) }
+                Button("分享 room.json") { sharingItem = ShareItem(url: export.jsonURL) }
             }
         }
         .navigationTitle("导出结果")
-        .sheet(item: $sharingURL) { url in
-            ShareSheet(activityItems: [url])
+        .sheet(item: $sharingItem) { item in
+            ShareSheet(activityItems: [item.url])
         }
     }
 }
 
-private extension URL: Identifiable {
-    var id: String { absoluteString }
+private struct ShareItem: Identifiable {
+    let id = UUID()
+    let url: URL
 }
-
