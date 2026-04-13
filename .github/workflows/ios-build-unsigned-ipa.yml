@@ -1,0 +1,38 @@
+name: Build unsigned iOS IPA (RoomPlanScanner)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build .app (unsigned)
+        run: |
+          set -euo pipefail
+          xcodebuild \
+            -project ios/RoomPlanScanner/RoomPlanScanner.xcodeproj \
+            -scheme RoomPlanScanner \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build/DerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build
+
+      - name: Package .ipa
+        run: |
+          set -euo pipefail
+          APP_PATH="build/DerivedData/Build/Products/Release-iphoneos/RoomPlanScanner.app"
+          chmod +x scripts/package_ipa.sh
+          scripts/package_ipa.sh "${APP_PATH}" "RoomPlanScanner-unsigned.ipa"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: RoomPlanScanner-unsigned-ipa
+          path: RoomPlanScanner-unsigned.ipa
+
