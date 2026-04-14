@@ -55,6 +55,17 @@ jobs:
           chmod +x scripts/package_ipa.sh
           scripts/package_ipa.sh "${APP_PATH}" "RoomPlanScanner-unsigned.ipa"
 
+      - name: Validate .ipa
+        run: |
+          set -euo pipefail
+          ls -la RoomPlanScanner-unsigned.ipa
+          file RoomPlanScanner-unsigned.ipa || true
+          unzip -tq RoomPlanScanner-unsigned.ipa
+          echo "--- zip root ---"
+          unzip -l RoomPlanScanner-unsigned.ipa | head -n 30
+          echo "--- plist exists ---"
+          unzip -l RoomPlanScanner-unsigned.ipa | grep -E 'Payload/RoomPlanScanner\.app/Info\.plist' >/dev/null
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
