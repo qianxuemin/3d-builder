@@ -14,6 +14,10 @@ if [[ ! -d "${APP_PATH}" || "${APP_PATH}" != *.app ]]; then
   exit 2
 fi
 
+OUT_DIR="$(cd "$(dirname "${OUT_IPA}")" && pwd)"
+OUT_IPA_ABS="${OUT_DIR}/$(basename "${OUT_IPA}")"
+mkdir -p "${OUT_DIR}"
+
 WORK_DIR="$(mktemp -d)"
 trap 'rm -rf "${WORK_DIR}"' EXIT
 
@@ -22,8 +26,7 @@ cp -R "${APP_PATH}" "${WORK_DIR}/Payload/"
 
 (
   cd "${WORK_DIR}"
-  /usr/bin/zip -qry "${OUT_IPA}" Payload
+  /usr/bin/zip -qry "${OUT_IPA_ABS}" Payload
 )
 
-echo "Wrote: ${OUT_IPA}"
-
+echo "Wrote: ${OUT_IPA_ABS}"
