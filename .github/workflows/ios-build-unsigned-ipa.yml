@@ -20,6 +20,17 @@ jobs:
           xcodebuild -version
           xcodebuild -showsdks || true
 
+      - name: Show source revision
+        run: |
+          set -euo pipefail
+          echo "GITHUB_SHA=${GITHUB_SHA}"
+          git rev-parse HEAD
+          git show --no-patch --oneline -1
+          echo "--- ExportedRoomView.swift (head) ---"
+          nl -ba ios/RoomPlanScanner/RoomPlanScanner/ExportedRoomView.swift | sed -n '1,80p'
+          echo "--- RoomCaptureModel.swift (snippet) ---"
+          nl -ba ios/RoomPlanScanner/RoomPlanScanner/RoomCaptureModel.swift | sed -n '50,100p'
+
       - name: Build .app (unsigned)
         run: |
           set -euo pipefail
